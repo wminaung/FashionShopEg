@@ -1,0 +1,16 @@
+create database(Fshop)=> item table (id, name, price, brand, qty, image)
+
+>>>>>
+CREATE TABLE item (
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+name VARCHAR(45),
+brand VARCHAR(45),
+price DOUBLE,
+qty INTEGER,
+image BLOB );
+>>>>>
+
+.header on
+.mode column
+
+pragma table_info("item")
