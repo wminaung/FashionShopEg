@@ -76,8 +76,14 @@ public class Main extends JFrame {
 		JMenu mnNewMenu_1 = new JMenu("Order");
 		menuBar.add(mnNewMenu_1);
 		
-		JMenuItem mntmNewMenuItem_2 = new JMenuItem("Sell");
-		mnNewMenu_1.add(mntmNewMenuItem_2);
+		JMenuItem sellMenuItem = new JMenuItem("Sell");
+		sellMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) { // on click sell menu
+				Sell sell = new Sell();
+				sell.setVisible(true);
+			}
+		});
+		mnNewMenu_1.add(sellMenuItem);
 		
 		JMenuItem mntmNewMenuItem_2_1 = new JMenuItem("Exit");
 		mntmNewMenuItem_2_1.addActionListener(new ActionListener() {

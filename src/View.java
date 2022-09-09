@@ -8,17 +8,31 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import java.awt.Color;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import javax.swing.JTextField;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class View extends JFrame {
 
@@ -30,7 +44,9 @@ public class View extends JFrame {
 	private JTextField txtPrice;
 	private JTextField txtBrand;
 	private JLabel lblImage;
-
+	FileInputStream fis;
+	byte[] insert_image = null;
+	int ID = 0;
 	/**
 	 * Launch the application.
 	 */
@@ -66,7 +82,7 @@ public class View extends JFrame {
 
 		lblImage = new JLabel("");
 		lblImage.setForeground(Color.BLACK);
-		lblImage.setBounds(76, 350, 219, 184);
+		lblImage.setBounds(75, 350, 219, 184);
 		contentPane.add(lblImage);
 
 		JLabel lblNewLabel_2 = new JLabel("Name");
@@ -106,8 +122,15 @@ public class View extends JFrame {
 		contentPane.add(txtBrand);
 		
 		JButton btnUpdate = new JButton("Update");
-		btnUpdate.setBounds(347, 511, 89, 23);
+		
+		btnUpdate.setBounds(384, 511, 89, 23);
 		contentPane.add(btnUpdate);
+		
+		JButton btnEditImg = new JButton("Edit Img");
+		
+		
+		btnEditImg.setBounds(126, 321, 89, 23);
+		contentPane.add(btnEditImg);
 
 		try { 
 			Connection con = DatabaseConnection.initializeDatabase();
@@ -135,6 +158,7 @@ public class View extends JFrame {
 			public void mouseClicked(MouseEvent e) { /// *****////
 				int row = table.getSelectedRow();
 				int id = (int) table.getValueAt(row, 0);
+				ID = id;
 				System.out.println("id is " + id);
 				try {
 					Connection con = DatabaseConnection.initializeDatabase();
@@ -148,7 +172,7 @@ public class View extends JFrame {
 						txtBrand.setText(rs.getString("brand"));
 						
 						// ************************* //
-						Image img = new ImageIcon(rs.getBytes("image")).getImage().getScaledInstance(300, 290, Image.SCALE_DEFAULT);
+						Image img = new ImageIcon(rs.getBytes("image")).getImage().getScaledInstance(200, 200, Image.SCALE_DEFAULT);
 						ImageIcon image = new ImageIcon(img);
 						// ************************* //
 						
@@ -159,9 +183,11 @@ public class View extends JFrame {
 								System.out.println("Want to change Image?");
 							}
 						});
-
+						
+						
+						
 					}
-
+				
 				} catch (SQLException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -170,6 +196,83 @@ public class View extends JFrame {
 			}
 		});
 
+		btnEditImg.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Image Edit browseing
+				JFileChooser chooser = new JFileChooser();
+				FileNameExtensionFilter filter = new FileNameExtensionFilter("*.images", "jpg", "jpeg", "png", "gif");
+				chooser.addChoosableFileFilter(filter);
+			int result =	chooser.showSaveDialog(null);
+				
+			
+			if (result == JFileChooser.APPROVE_OPTION) {
+				String path = chooser.getSelectedFile().getAbsolutePath();
+				File image = new File(path);
+				try {
+					fis = new FileInputStream(image);
+					// important !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					byte[] buffer = new byte[1024];
+					try {
+						for (int len; (len = fis.read(buffer)) != -1;) {
+						    bos.write(buffer, 0, len);
+						}
+						insert_image = bos.toByteArray();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				
+					
+				} catch (FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+			} else if (result == JFileChooser.CANCEL_OPTION) {
+				JOptionPane.showMessageDialog(null, "Please Choose Image");
+			}
+				
+			}
+		});
+		btnUpdate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//update data
+				
+				if(ID != 0) {
+					System.out.println(ID);
+					Connection con;
+					try {
+						con = DatabaseConnection.initializeDatabase();
+				
+						
+						String sql = "UPDATE item SET name=?, brand=?, price=?, qty=?, image=? WHERE id=?";
+						PreparedStatement stmt = con.prepareStatement(sql);
+						
+						stmt.setString(1, txtName.getText());
+						stmt.setString(2, txtBrand.getText());
+						stmt.setDouble(3, Double.parseDouble(txtPrice.getText()));
+						stmt.setInt(4, Integer.parseInt(txtQty.getText()));
+						//stmt.setBinaryStream(5, fis); >>> not work
+						//stmt.setBlob(5, fis); >>>  not work
+						stmt.setBytes(5, insert_image);
+						stmt.setInt(6, ID);
+						stmt.executeUpdate();
+						JOptionPane.showMessageDialog(null, "Successfully Updated");
+			
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}else {
+					JOptionPane.showMessageDialog(null, "You need to select item");
+				}
+				
+			}
+		});
+		
+	
+		
 		// <<end construct>>
 	}
 }

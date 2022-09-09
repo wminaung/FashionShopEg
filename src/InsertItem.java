@@ -88,7 +88,7 @@ public class InsertItem extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				// image Browse
 				JFileChooser chooser = new JFileChooser();
-				FileNameExtensionFilter filter = new FileNameExtensionFilter("*.images", "png", "jpg", "gif");
+				FileNameExtensionFilter filter = new FileNameExtensionFilter("*.images", "png", "jpg", "gif","webp");
 				chooser.addChoosableFileFilter(filter);
 				int result = chooser.showSaveDialog(null);
 
